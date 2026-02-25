@@ -123,7 +123,7 @@ class FileHost extends Model
         'views'
     ];
 
-    protected $appends = ['url', 'human_size'];
+    protected $appends = ['human_size'];
 
     protected static function boot()
     {

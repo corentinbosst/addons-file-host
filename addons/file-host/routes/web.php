@@ -17,7 +17,7 @@ use Illuminate\Support\Facades\Route;
 $prefix = setting('file_host_prefix', 'drive');
 
 Route::get('/' . $prefix . '/{uuid}', [FileHostPublicController::class, 'download'])
-    ->name('file-host.download')
+    ->name('download')
     ->where('uuid', '[a-zA-Z0-9\.\-_]+(?:\/[a-zA-Z0-9\.\-_]+)*')
     ->withoutMiddleware([
         \Illuminate\Foundation\Http\Middleware\PreventRequestsDuringMaintenance::class,

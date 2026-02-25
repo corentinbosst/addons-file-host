@@ -15,8 +15,7 @@ return [
     'submit_upload' => 'Envoyer le fichier',
     'private_hosting' => 'Hébergé en privé sur votre serveur.',
     'url_config' => 'Configuration de l\'URL',
-    'url_change_warning_title' => 'Changement de l\'adresse des liens',
-    'url_change_warning_text' => 'Après avoir cliqué sur "Enregistrer", actualisez la page pour que les nouveaux liens soient actifs. Les anciens liens ne fonctionneront plus. Si vous utilisez le cache des routes, lancez "php artisan route:cache" pour appliquer le changement.',
+
     'url_prefix' => 'Préfixe de l\'URL',
     'save' => 'Enregistrer',
     'file' => 'Fichier',

@@ -23,12 +23,6 @@ class FileHostServiceProvider extends BaseAddonServiceProvider
 
     public function register()
     {
-        if ($this->app->bound(\Illuminate\Contracts\Http\Kernel::class) && !app()->bound('file_host_middleware_registered')) {
-            $this->app->make(\Illuminate\Contracts\Http\Kernel::class)
-                ->prependMiddleware(\App\Addons\FileHost\Http\Middleware\FileHostMaintenanceBypass::class);
-            
-            app()->instance('file_host_middleware_registered', true);
-        }
     }
 
     public function boot()
@@ -37,16 +31,17 @@ class FileHostServiceProvider extends BaseAddonServiceProvider
         $this->loadViews();
         $this->loadMigrations();
 
-        if (\Illuminate\Support\Facades\File::exists($this->addonPath('routes/admin.php'))) {
+        if (\Illuminate\Support\Facades\File::exists(addon_path($this->uuid, 'routes/admin.php'))) {
             \Illuminate\Support\Facades\Route::middleware(['web', 'admin'])
                 ->prefix(admin_prefix())
                 ->name('admin.')
-                ->group($this->addonPath('routes/admin.php'));
+                ->group(addon_path($this->uuid, 'routes/admin.php'));
         }
 
-        if (\Illuminate\Support\Facades\File::exists($this->addonPath('routes/web.php'))) {
+        if (\Illuminate\Support\Facades\File::exists(addon_path($this->uuid, 'routes/web.php'))) {
             \Illuminate\Support\Facades\Route::middleware(['web'])
-                ->group($this->addonPath('routes/web.php'));
+                ->name('file-host.')
+                ->group(addon_path($this->uuid, 'routes/web.php'));
         }
 
         $this->registerSettingsItems();

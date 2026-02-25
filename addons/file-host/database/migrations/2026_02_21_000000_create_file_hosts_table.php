@@ -27,6 +27,7 @@ return new class extends Migration
             $table->string('mime_type')->nullable();
             $table->unsignedBigInteger('file_size')->default(0);
             $table->unsignedBigInteger('admin_id')->nullable();
+            $table->foreign('admin_id')->references('id')->on('admins')->onDelete('set null');
             $table->unsignedBigInteger('views')->default(0);
             $table->timestamps();
         });

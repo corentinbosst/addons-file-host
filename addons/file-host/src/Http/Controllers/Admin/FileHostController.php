@@ -51,11 +51,7 @@ class FileHostController extends Controller
         $prefix = trim($prefix, '/');
         $prefix = $prefix ?: 'drive';
 
-        if (class_exists(\App\Models\Admin\Setting::class)) {
-            \App\Models\Admin\Setting::updateSettings(['file_host_prefix' => $prefix]);
-        } else {
-            setting(['file_host_prefix' => $prefix]);
-        }
+        setting(['file_host_prefix' => $prefix]);
 
         return redirect()->route('admin.file-host.index')->with('success', __('file-host::messages.success_update'));
     }
@@ -79,9 +75,6 @@ class FileHostController extends Controller
                 ->with('error', __('file-host::messages.error_extension', ['ext' => $ext]));
         }
 
-        $realMime = $file->getMimeType();
-        $this->checkDangerousMime($realMime, $ext);
-
         $originalName = $this->sanitizeFileName($file->getClientOriginalName());
         $uuid = (string) Str::uuid() . '.' . $ext;
         $filePath = $file->storeAs('public/host-drive', $uuid);
@@ -94,7 +87,7 @@ class FileHostController extends Controller
             'uuid'          => $uuid,
             'original_name' => $originalName,
             'file_path'     => $filePath,
-            'mime_type'     => $realMime,
+            'mime_type'     => $file->getMimeType(),
             'file_size'     => $file->getSize(),
             'admin_id'      => auth()->guard('admin')->id(),
         ]);
@@ -112,6 +105,14 @@ class FileHostController extends Controller
         ]);
 
         $file = FileHost::findOrFail($id);
+        
+        // Sécurité sur le nouveau nom original
+        $originalExt = strtolower(pathinfo($request->original_name, PATHINFO_EXTENSION));
+        if (in_array($originalExt, FileHost::BLOCKED_EXTENSIONS, true)) {
+             return redirect()->route('admin.file-host.index')
+                ->with('error', __('file-host::messages.forbidden_type'));
+        }
+
         $file->original_name = $this->sanitizeFileName($request->original_name);
 
         $newUuid = strtolower($request->uuid);
@@ -151,13 +152,5 @@ class FileHostController extends Controller
         $name = str_replace(['../', '..\\', '/', '\\'], '', $name);
         $name = preg_replace('/[^\w\s\.\-\(\)\[\]àâäéèêëîïôùûüç]/u', '', $name);
         return mb_substr(trim($name) ?: 'fichier', 0, 200);
-    }
-
-    private function checkDangerousMime(string $mime, string $ext): void
-    {
-        $dangerous = ['application/x-php', 'application/php', 'text/x-php'];
-        if (in_array($mime, $dangerous, true)) {
-            throw new \RuntimeException(__('file-host::messages.forbidden_type'));
-        }
     }
 }

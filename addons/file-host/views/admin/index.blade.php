@@ -39,23 +39,7 @@
                     </div>
 
 
-                    @if(session('success'))
-                        <div class="mx-4 mt-4 flex items-center gap-3 p-4 rounded-xl bg-green-50 border border-green-200 text-green-800 dark:bg-green-900/20 dark:border-green-800 dark:text-green-300 text-sm font-medium">
-                            <i class="bi bi-check-circle-fill"></i>{{ session('success') }}
-                        </div>
-                    @endif
-                    @if(session('error'))
-                        <div class="mx-4 mt-4 flex items-center gap-3 p-4 rounded-xl bg-red-50 border border-red-200 text-red-800 dark:bg-red-900/20 dark:border-red-800 dark:text-red-300 text-sm font-medium">
-                            <i class="bi bi-exclamation-triangle-fill"></i>{{ session('error') }}
-                        </div>
-                    @endif
-                    @if($errors->any())
-                        <div class="mx-4 mt-4 p-4 rounded-xl bg-red-50 border border-red-200 text-red-800 dark:bg-red-900/20 dark:border-red-800 dark:text-red-300 text-sm">
-                            <ul class="list-disc pl-4 space-y-1">
-                                @foreach($errors->all() as $error)<li class="font-medium">{{ $error }}</li>@endforeach
-                            </ul>
-                        </div>
-                    @endif
+                    @include('admin/shared/alerts')
 
 
                     <div class="p-4 border-b dark:border-gray-700">
@@ -115,15 +99,6 @@
                                     <span class="font-semibold text-sm text-gray-800 dark:text-gray-200">{{ __('file-host::messages.url_config') }}</span>
                                 </div>
                                 <div class="p-4">
-                                    <div class="flex items-start gap-2 mb-4 p-3 rounded-lg bg-amber-50 border border-amber-200 dark:bg-amber-900/20 dark:border-amber-700/50">
-                                        <i class="bi bi-exclamation-circle-fill text-amber-500 mt-0.5 flex-shrink-0"></i>
-                                        <div>
-                                            <p class="text-xs font-semibold text-amber-800 dark:text-amber-300">{{ __('file-host::messages.url_change_warning_title') }}</p>
-                                            <p class="text-xs text-amber-700 dark:text-amber-400 mt-0.5 leading-relaxed">
-                                                {{ __('file-host::messages.url_change_warning_text') }}
-                                            </p>
-                                        </div>
-                                    </div>
                                     <form action="{{ route('admin.file-host.settings.update') }}" method="POST">
                                         @csrf
                                         <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1.5">{{ __('file-host::messages.url_prefix') }}</label>
@@ -305,64 +280,64 @@
 </div>
 
 
-<div id="copy-toast" style="position:fixed;bottom:1.5rem;right:1.5rem;background:#1e293b;color:#f8fafc;padding:.75rem 1.25rem;border-radius:.875rem;font-size:.85rem;font-weight:600;display:flex;align-items:center;gap:.5rem;box-shadow:0 10px 30px rgba(0,0,0,.25);transform:translateY(5rem);opacity:0;transition:all .3s;z-index:9999;">
-    <i class="bi bi-check-circle-fill" style="color:#22c55e;"></i> {{ __('file-host::messages.link_copied') }}
+<div id="copy-toast" class="fixed bottom-6 right-6 bg-slate-800 text-slate-50 px-5 py-3 rounded-xl text-sm font-bold flex items-center gap-2 shadow-2xl translate-y-20 opacity-0 transition-all z-[9999]">
+    <i class="bi bi-check-circle-fill text-green-500"></i> {{ __('file-host::messages.link_copied') }}
 </div>
 
 
 <div id="previewBackdrop" onclick="if(event.target===this)closePreview()"
-     style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.92);z-index:2000;align-items:center;justify-content:center;flex-direction:column;padding:1rem;">
-    <div style="display:flex;align-items:center;justify-content:space-between;width:100%;max-width:64rem;margin-bottom:1rem;">
+     class="hidden fixed inset-0 bg-black/90 z-[2000] flex-col items-center justify-center p-4">
+    <div class="flex items-center justify-between w-full max-w-5xl mb-4">
         <div>
-            <div id="preview-name" style="font-size:1rem;font-weight:800;color:#f8fafc;"></div>
-            <div id="preview-meta" style="font-size:.75rem;color:#64748b;margin-top:.15rem;"></div>
+            <div id="preview-name" class="text-lg font-extrabold text-slate-50"></div>
+            <div id="preview-meta" class="text-xs text-slate-400 mt-1 uppercase tracking-wider"></div>
         </div>
-        <div style="display:flex;align-items:center;gap:.75rem;">
+        <div class="flex items-center gap-3">
             <a id="preview-open-link" href="#" target="_blank"
-               style="display:inline-flex;align-items:center;gap:.4rem;background:rgba(255,255,255,.1);color:#e2e8f0;border:1px solid rgba(255,255,255,.15);border-radius:.75rem;padding:.4rem .875rem;font-size:.8rem;font-weight:600;text-decoration:none;">
+               class="inline-flex items-center gap-2 bg-white/10 text-slate-100 border border-white/10 hover:bg-white/20 px-4 py-2 rounded-xl text-sm font-semibold transition-colors">
                 <i class="bi bi-box-arrow-up-right"></i> {{ __('file-host::messages.open') ?? 'Ouvrir' }}
             </a>
             <button onclick="closePreview()"
-                    style="background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.15);color:#f8fafc;width:2.25rem;height:2.25rem;border-radius:.75rem;cursor:pointer;font-size:1rem;display:flex;align-items:center;justify-content:center;">
+                    class="bg-white/10 hover:bg-white/20 border border-white/10 text-slate-50 w-10 h-10 rounded-xl flex items-center justify-center transition-colors">
                 <i class="bi bi-x-lg"></i>
             </button>
         </div>
     </div>
     <div id="preview-content"
-         style="width:100%;max-width:64rem;max-height:85vh;display:flex;align-items:center;justify-content:center;overflow:hidden;border-radius:1rem;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.08);">
+         class="w-full max-w-5xl max-h-[80vh] flex items-center justify-center overflow-hidden rounded-2xl bg-white/5 border border-white/10 shadow-2xl">
     </div>
 </div>
 
 {{-- Edit Modal --}}
 <div id="editBackdrop" onclick="if(event.target===this)closeEditModal()"
-     style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:1000;align-items:center;justify-content:center;backdrop-filter:blur(4px);">
-    <div style="background:#fff;border-radius:1.5rem;max-width:30rem;width:95%;overflow:hidden;box-shadow:0 25px 60px rgba(0,0,0,.2);" class="dark:bg-slate-900">
-        <div style="padding:1.25rem 1.5rem;background:#1e293b;display:flex;align-items:center;gap:.75rem;">
+     class="hidden fixed inset-0 bg-black/60 z-[1000] flex items-center justify-center backdrop-blur-sm">
+    <div class="bg-white dark:bg-slate-900 rounded-2xl max-w-lg w-full overflow-hidden shadow-2xl mx-4">
+        <div class="px-6 py-4 bg-slate-800 flex items-center gap-3">
             <i class="bi bi-pencil-square text-white text-lg"></i>
-            <span style="font-weight:800;color:#fff;font-size:1rem;">{{ __('file-host::messages.edit_file') }}</span>
+            <span class="font-bold text-white text-base">{{ __('file-host::messages.edit_file') }}</span>
         </div>
         <form id="editForm" method="POST" action="">
             @csrf
             @method('PUT')
-            <div style="padding:1.25rem;display:flex;flex-direction:column;gap:.875rem;">
+            <div class="p-6 flex flex-col gap-4">
                 <div>
-                    <label style="display:block;font-size:.75rem;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:.05em;margin-bottom:.375rem;">{{ __('file-host::messages.file_name') }}</label>
+                    <label class="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-1.5">{{ __('file-host::messages.file_name') }}</label>
                     <input type="text" name="original_name" id="edit_original_name" class="input-text" required>
                 </div>
                 <div>
-                    <label style="display:block;font-size:.75rem;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:.05em;margin-bottom:.375rem;">{{ __('file-host::messages.link') }}</label>
-                    <div style="display:flex;border:1.5px solid #e2e8f0;border-radius:.875rem;overflow:hidden;">
-                        <span style="display:flex;align-items:center;padding:.625rem .75rem;background:#f1f5f9;color:#94a3b8;font-size:.8rem;white-space:nowrap;font-weight:700;border-right:1.5px solid #e2e8f0;">
+                    <label class="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-1.5">{{ __('file-host::messages.link') }}</label>
+                    <div class="flex border border-slate-200 dark:border-slate-700 rounded-xl overflow-hidden focus-within:ring-2 focus-within:ring-indigo-500 transition-all">
+                        <span class="flex items-center px-4 bg-slate-50 dark:bg-slate-800 text-slate-400 font-bold text-sm border-r border-slate-200 dark:border-slate-700 whitespace-nowrap">
                             /{{ $prefix ?? 'drive' }}/
                         </span>
                         <input type="text" name="uuid" id="edit_uuid"
-                               style="flex:1;padding:.625rem .875rem;border:none;outline:none;font-size:.875rem;background:#fff;color:#0f172a;min-width:0;" required>
+                               class="flex-1 px-4 py-2.5 outline-none text-sm bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100 min-w-0" required>
                     </div>
                 </div>
             </div>
-            <div style="display:flex;justify-content:flex-end;gap:.75rem;padding:.875rem 1.25rem;background:#f8fafc;border-top:1px solid #f1f5f9;" class="dark:bg-slate-800/50 dark:border-slate-800">
-                <button type="button" onclick="closeEditModal()" class="btn btn-light">{{ __('file-host::messages.cancel') }}</button>
-                <button type="submit" class="btn btn-primary">
+            <div class="flex justify-end gap-3 px-6 py-4 bg-slate-50 dark:bg-slate-800/50 border-t border-slate-100 dark:border-slate-800">
+                <button type="button" onclick="closeEditModal()" class="btn btn-light shadow-sm">{{ __('file-host::messages.cancel') }}</button>
+                <button type="submit" class="btn btn-primary shadow-sm">
                     <i class="bi bi-check-lg mr-1"></i> {{ __('file-host::messages.save_changes') }}
                 </button>
             </div>
@@ -379,24 +354,30 @@ function copyLink(url) {
     });
 }
 function openPreview(url, name, type) {
+    const escapeHtml = (str) => str.replace(/[&<>"']/g, m => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'}[m]));
     document.getElementById('preview-name').textContent = name;
     document.getElementById('preview-meta').textContent = type.toUpperCase();
     document.getElementById('preview-open-link').href = url;
     const c = document.getElementById('preview-content');
     c.innerHTML = ''; c.style.height = '';
+    const safeName = escapeHtml(name);
     if (type === 'image') {
-        c.innerHTML = `<img src="${url}" style="max-width:100%;max-height:85vh;object-fit:contain;border-radius:.75rem;display:block;" alt="${name}">`;
+        c.innerHTML = `<img src="${url}" class="max-w-full max-h-[80vh] object-contain rounded-xl block" alt="${safeName}">`;
     } else if (type === 'pdf') {
-        c.style.height = '85vh';
-        c.innerHTML = `<iframe src="${url}" style="width:100%;height:100%;border:none;border-radius:.75rem;"></iframe>`;
+        c.classList.add('h-[80vh]');
+        c.innerHTML = `<iframe src="${url}" class="w-full h-full border-none rounded-xl"></iframe>`;
     } else if (type === 'video') {
-        c.innerHTML = `<video controls autoplay style="max-width:100%;max-height:85vh;border-radius:.75rem;"><source src="${url}">Non supporté.</video>`;
+        c.innerHTML = `<video controls autoplay class="max-w-full max-h-[80vh] rounded-xl"><source src="${url}">Non supporté.</video>`;
     }
-    document.getElementById('previewBackdrop').style.display = 'flex';
+    const b = document.getElementById('previewBackdrop');
+    b.classList.remove('hidden');
+    b.classList.add('flex');
     document.body.style.overflow = 'hidden';
 }
 function closePreview() {
-    document.getElementById('previewBackdrop').style.display = 'none';
+    const b = document.getElementById('previewBackdrop');
+    b.classList.add('hidden');
+    b.classList.remove('flex');
     document.getElementById('preview-content').innerHTML = '';
     document.body.style.overflow = '';
 }
@@ -404,9 +385,15 @@ function openEditModal(id, name, uuid) {
     document.getElementById('editForm').action = `{{ url(admin_prefix() . '/file-host') }}/${id}`;
     document.getElementById('edit_original_name').value = name;
     document.getElementById('edit_uuid').value = uuid;
-    document.getElementById('editBackdrop').style.display = 'flex';
+    const b = document.getElementById('editBackdrop');
+    b.classList.remove('hidden');
+    b.classList.add('flex');
 }
-function closeEditModal() { document.getElementById('editBackdrop').style.display = 'none'; }
+function closeEditModal() { 
+    const b = document.getElementById('editBackdrop');
+    b.classList.add('hidden');
+    b.classList.remove('flex');
+}
 document.addEventListener('keydown', e => { if (e.key === 'Escape') { closePreview(); closeEditModal(); } });
 
 /* Dropzone */
