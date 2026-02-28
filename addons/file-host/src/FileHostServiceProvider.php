@@ -35,13 +35,17 @@ class FileHostServiceProvider extends BaseAddonServiceProvider
             \Illuminate\Support\Facades\Route::middleware(['web', 'admin'])
                 ->prefix(admin_prefix())
                 ->name('admin.')
-                ->group(addon_path($this->uuid, 'routes/admin.php'));
+                ->group(function () {
+                    require addon_path($this->uuid, 'routes/admin.php');
+                });
         }
 
         if (\Illuminate\Support\Facades\File::exists(addon_path($this->uuid, 'routes/web.php'))) {
             \Illuminate\Support\Facades\Route::middleware(['web'])
                 ->name('file-host.')
-                ->group(addon_path($this->uuid, 'routes/web.php'));
+                ->group(function () {
+                    require addon_path($this->uuid, 'routes/web.php');
+                });
         }
 
         $this->registerSettingsItems();

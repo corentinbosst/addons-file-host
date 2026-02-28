@@ -4,9 +4,6 @@
 > Images, PDF, vidéos — tout est centralisé, sécurisé et accessible via un lien direct personnalisable.
 
 ---
-[![Télécharger le projet](https://img.shields.io/badge/TÉLÉCHARGER-Code%20Complet%20(ZIP)-blue?style=for-the-badge&logo=github)](https://github.com/corentinbosst/addons-file-host/archive/refs/heads/main.zip)
-
----
 
 ## ✨ Fonctionnalités
 
