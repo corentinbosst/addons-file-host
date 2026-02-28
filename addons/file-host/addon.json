@@ -9,6 +9,7 @@
     },
     "year": "2026",
     "license": "Open Source",
+    "thumbnail": "https://corentin.site/uploads/f2860b2aae11060df3603d1ab3b8be2a.png",
     "providers": [
         "App\\Addons\\FileHost\\FileHostServiceProvider"
     ]

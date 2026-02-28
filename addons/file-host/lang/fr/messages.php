@@ -15,7 +15,6 @@ return [
     'submit_upload' => 'Envoyer le fichier',
     'private_hosting' => 'Hébergé en privé sur votre serveur.',
     'url_config' => 'Configuration de l\'URL',
-
     'url_prefix' => 'Préfixe de l\'URL',
     'save' => 'Enregistrer',
     'file' => 'Fichier',

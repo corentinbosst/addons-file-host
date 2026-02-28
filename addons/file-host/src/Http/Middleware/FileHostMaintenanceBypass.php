@@ -18,12 +18,12 @@ use Closure;
 use Illuminate\Http\Request;
 
 /**
- * Middleware global prépendé AVANT PreventRequestsDuringMaintenance.
+ * Middleware enregistré via withoutMiddleware() sur la route publique file-host.
  *
- * withoutMiddleware() sur une route est INEFFICACE contre les middlewares globaux
- * (ceux dans $middleware du Kernel) car ils tournent avant que le router ne
- * soit consulté. Ce middleware résout le problème en interceptant les requêtes
- * file-host directement dans la pipeline globale, avant le check de maintenance.
+ * Permet aux fichiers d'être servis même lorsque le site est en maintenance,
+ * en court-circuitant le MaintenanceMiddleware de ClientXCMS (groupe web).
+ * Note : PreventRequestsDuringMaintenance (middleware global du Kernel) n'est
+ * pas géré ici — il doit être configuré au niveau du CMS si nécessaire.
  */
 class FileHostMaintenanceBypass
 {
@@ -35,13 +35,7 @@ class FileHostMaintenanceBypass
         }
 
         // Récupérer le préfixe configuré (avec fallback sécurisé).
-        try {
-            $prefix = setting('file_host_prefix', 'drive') ?: 'drive';
-        } catch (\Throwable $e) {
-            $prefix = 'drive';
-        }
-
-        $prefix = trim($prefix, '/');
+        $prefix = FileHost::getPrefix();
         $path   = ltrim($request->getPathInfo(), '/');
 
         // La requête ne correspond pas au préfixe file-host → on laisse passer.

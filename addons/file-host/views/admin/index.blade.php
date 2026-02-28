@@ -38,7 +38,7 @@
                     </div>
 
 
-                    @include('admin/shared/alerts')
+                    @include('admin.shared.alerts')
 
 
                     <div class="p-4 border-b dark:border-gray-700">

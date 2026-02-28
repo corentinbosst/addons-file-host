@@ -14,12 +14,14 @@
 namespace App\Addons\FileHost;
 
 use App\Extensions\BaseAddonServiceProvider;
-use App\Models\Admin\Permission;
 use Illuminate\Support\Facades\Log;
 
 class FileHostServiceProvider extends BaseAddonServiceProvider
 {
     protected string $uuid = 'file-host';
+
+    /** Permission custom de l'addon, cohérente avec les contrôleurs. */
+    private const PERMISSION = 'admin.file-host';
 
     public function register()
     {
@@ -30,17 +32,6 @@ class FileHostServiceProvider extends BaseAddonServiceProvider
         $this->loadTranslations();
         $this->loadViews();
         $this->loadMigrations();
-
-        // Prépendre notre middleware AVANT PreventRequestsDuringMaintenance dans la
-        // pipeline globale du Kernel. C'est la seule façon fiable de bypasser le
-        // mode maintenance pour les routes file-host — withoutMiddleware() sur une
-        // route ne fonctionne pas car les middlewares globaux tournent avant le router.
-        $kernel = $this->app->make(\Illuminate\Contracts\Http\Kernel::class);
-        if (method_exists($kernel, 'prependMiddleware')) {
-            $kernel->prependMiddleware(
-                \App\Addons\FileHost\Http\Middleware\FileHostMaintenanceBypass::class
-            );
-        }
 
         if (\Illuminate\Support\Facades\File::exists(addon_path($this->uuid, 'routes/admin.php'))) {
             \Illuminate\Support\Facades\Route::middleware(['web', 'admin'])
@@ -73,6 +64,8 @@ class FileHostServiceProvider extends BaseAddonServiceProvider
                 app()->instance('corentin_website_card_registered', true);
             }
 
+            // Utilise la même permission custom que les contrôleurs pour éviter
+            // qu'un admin voie le lien menu mais obtienne un 403 en cliquant dessus.
             $settings->addCardItem(
                 'corentin-website',
                 'file-host',
@@ -80,7 +73,7 @@ class FileHostServiceProvider extends BaseAddonServiceProvider
                 'file-host::messages.subtitle',
                 'bi bi-folder2-open',
                 [\App\Addons\FileHost\Http\Controllers\Admin\FileHostController::class, 'index'],
-                Permission::MANAGE_EXTENSIONS
+                self::PERMISSION
             );
         } catch (\Exception $e) {
             Log::error("FileHost: Erreur menu: {$e->getMessage()}");

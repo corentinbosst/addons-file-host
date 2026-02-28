@@ -1,1 +1,7 @@
-[]
+[
+    {
+        "name": "admin.file-host",
+        "label": "permissions.file-host",
+        "group": "permissions.admin"
+    }
+]

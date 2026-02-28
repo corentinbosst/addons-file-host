@@ -15,7 +15,6 @@ namespace App\Addons\FileHost\Http\Controllers\Admin;
 
 use App\Addons\FileHost\Models\FileHost;
 use App\Http\Controllers\Controller;
-use App\Models\Admin\Permission;
 use App\Models\Admin\Setting;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -24,10 +23,13 @@ use Illuminate\Support\Facades\Log;
 
 class FileHostController extends Controller
 {
+    /** Permission custom de l'addon (déclarée dans permissions.json). */
+    private const PERMISSION = 'admin.file-host';
+
     public function index()
     {
-        staff_aborts_permission(Permission::MANAGE_EXTENSIONS);
-        
+        staff_aborts_permission(self::PERMISSION);
+
         $files = FileHost::orderBy('created_at', 'desc')->paginate(15);
         $prefix = setting('file_host_prefix', 'drive');
 
@@ -39,7 +41,7 @@ class FileHostController extends Controller
 
     public function updateSettings(Request $request)
     {
-        staff_aborts_permission(Permission::MANAGE_EXTENSIONS);
+        staff_aborts_permission(self::PERMISSION);
 
         $request->validate([
             'file_host_prefix' => 'required|string|max:100',
@@ -59,7 +61,7 @@ class FileHostController extends Controller
 
     public function upload(Request $request)
     {
-        staff_aborts_permission(Permission::MANAGE_EXTENSIONS);
+        staff_aborts_permission(self::PERMISSION);
 
         $request->validate([
             'file' => 'required|file|max:51200',
@@ -98,7 +100,7 @@ class FileHostController extends Controller
 
     public function update(Request $request, $id)
     {
-        staff_aborts_permission(Permission::MANAGE_EXTENSIONS);
+        staff_aborts_permission(self::PERMISSION);
 
         $request->validate([
             'original_name' => 'required|string|max:255',
@@ -106,7 +108,7 @@ class FileHostController extends Controller
         ]);
 
         $file = FileHost::findOrFail($id);
-        
+
         // Sécurité sur le nouveau nom original
         $originalExt = strtolower(pathinfo($request->original_name, PATHINFO_EXTENSION));
         if (in_array($originalExt, FileHost::BLOCKED_EXTENSIONS, true)) {
@@ -138,7 +140,7 @@ class FileHostController extends Controller
 
     public function destroy($id)
     {
-        staff_aborts_permission(Permission::MANAGE_EXTENSIONS);
+        staff_aborts_permission(self::PERMISSION);
 
         $file = FileHost::findOrFail($id);
         if (Storage::exists($file->file_path)) {
@@ -151,7 +153,7 @@ class FileHostController extends Controller
     private function sanitizeFileName(string $name): string
     {
         $name = str_replace("\0", '', $name);
-        $name = str_replace(['../', '..\\', '/', '\\'], '', $name);
+        $name = str_replace(['../', '..\\ ', '/', '\\'], '', $name);
         $name = preg_replace('/[^\w\s\.\-\(\)\[\]àâäéèêëîïôùûüç]/u', '', $name);
         return mb_substr(trim($name) ?: 'fichier', 0, 200);
     }

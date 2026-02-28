@@ -18,8 +18,16 @@ use App\Http\Controllers\Controller;
 
 class FileHostPublicController extends Controller
 {
-    public function download($uuid)
+    public function download(string $prefix, string $uuid)
     {
+        // Valider que le préfixe de l'URL correspond au setting configuré (runtime).
+        // La route utilise {prefix} générique pour être compatible avec route:cache ;
+        // on effectue donc la vérification ici, à chaque requête.
+        $configuredPrefix = FileHost::getPrefix();
+        if ($prefix !== $configuredPrefix) {
+            abort(404);
+        }
+
         $response = FileHost::serve($uuid);
 
         if ($response === null) {

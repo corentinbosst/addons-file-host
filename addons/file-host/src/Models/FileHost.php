@@ -138,7 +138,10 @@ class FileHost extends Model
 
     public function getUrlAttribute()
     {
-        return route('file-host.download', $this->uuid);
+        return route('file-host.download', [
+            'prefix' => self::getPrefix(),
+            'uuid'   => $this->uuid,
+        ]);
     }
 
     public function getHumanSizeAttribute(): string

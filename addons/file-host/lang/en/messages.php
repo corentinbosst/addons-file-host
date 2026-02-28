@@ -15,7 +15,6 @@ return [
     'submit_upload' => 'Upload file',
     'private_hosting' => 'Hosted privately on your server.',
     'url_config' => 'URL Configuration',
-
     'url_prefix' => 'URL Prefix',
     'save' => 'Save',
     'file' => 'File',

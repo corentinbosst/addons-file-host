@@ -14,18 +14,17 @@
 use App\Addons\FileHost\Http\Controllers\FileHostPublicController;
 use Illuminate\Support\Facades\Route;
 
-try {
-    $prefix = setting('file_host_prefix', 'drive') ?: 'drive';
-} catch (\Throwable $e) {
-    $prefix = 'drive';
-}
-
-Route::get('/' . $prefix . '/{uuid}', [FileHostPublicController::class, 'download'])
+// On utilise un {prefix} dynamique au lieu d'appeler setting() ici.
+// Appeler setting() au top-level des routes est incompatible avec php artisan route:cache
+// (la valeur serait figée au moment du cache, ignorant tout changement ultérieur).
+// Le contrôleur se charge de vérifier que le préfixe correspond au setting configuré.
+Route::get('/{prefix}/{uuid}', [FileHostPublicController::class, 'download'])
     ->name('download')
+    ->where('prefix', '[a-zA-Z0-9\-\_]+')
     ->where('uuid', '[a-zA-Z0-9\.\-_]+(?:\/[a-zA-Z0-9\.\-_]+)*')
     ->withoutMiddleware([
-        // Middleware de maintenance ClientXCMS (groupe web) — le vrai bloqueur
+        // Middleware de maintenance ClientXCMS (groupe web)
         \App\Http\Middleware\MaintenanceMiddleware::class,
-        // Middleware de maintenance Laravel natif (globale), géré aussi par FileHostMaintenanceBypass
-        \Illuminate\Foundation\Http\Middleware\PreventRequestsDuringMaintenance::class,
+        // Note : PreventRequestsDuringMaintenance est un middleware GLOBAL (Kernel), withoutMiddleware()
+        // est inefficace contre lui. Il est géré par FileHostMaintenanceBypass (prépendé au Kernel).
     ]);
