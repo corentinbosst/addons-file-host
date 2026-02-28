@@ -16,6 +16,7 @@ namespace App\Addons\FileHost\Http\Controllers\Admin;
 use App\Addons\FileHost\Models\FileHost;
 use App\Http\Controllers\Controller;
 use App\Models\Admin\Permission;
+use App\Models\Admin\Setting;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
@@ -51,7 +52,7 @@ class FileHostController extends Controller
         $prefix = trim($prefix, '/');
         $prefix = $prefix ?: 'drive';
 
-        setting(['file_host_prefix' => $prefix]);
+        Setting::updateSettings(['file_host_prefix' => $prefix]);
 
         return redirect()->route('admin.file-host.index')->with('success', __('file-host::messages.success_update'));
     }
@@ -114,6 +115,7 @@ class FileHostController extends Controller
         }
 
         $file->original_name = $this->sanitizeFileName($request->original_name);
+        $file->save();
 
         $newUuid = strtolower($request->uuid);
         $newUuid = preg_replace('/[^a-z0-9\/\.\-_]/', '-', $newUuid);

@@ -31,21 +31,28 @@ class FileHostServiceProvider extends BaseAddonServiceProvider
         $this->loadViews();
         $this->loadMigrations();
 
+        // Prépendre notre middleware AVANT PreventRequestsDuringMaintenance dans la
+        // pipeline globale du Kernel. C'est la seule façon fiable de bypasser le
+        // mode maintenance pour les routes file-host — withoutMiddleware() sur une
+        // route ne fonctionne pas car les middlewares globaux tournent avant le router.
+        $kernel = $this->app->make(\Illuminate\Contracts\Http\Kernel::class);
+        if (method_exists($kernel, 'prependMiddleware')) {
+            $kernel->prependMiddleware(
+                \App\Addons\FileHost\Http\Middleware\FileHostMaintenanceBypass::class
+            );
+        }
+
         if (\Illuminate\Support\Facades\File::exists(addon_path($this->uuid, 'routes/admin.php'))) {
             \Illuminate\Support\Facades\Route::middleware(['web', 'admin'])
                 ->prefix(admin_prefix())
                 ->name('admin.')
-                ->group(function () {
-                    require addon_path($this->uuid, 'routes/admin.php');
-                });
+                ->group(addon_path($this->uuid, 'routes/admin.php'));
         }
 
         if (\Illuminate\Support\Facades\File::exists(addon_path($this->uuid, 'routes/web.php'))) {
             \Illuminate\Support\Facades\Route::middleware(['web'])
                 ->name('file-host.')
-                ->group(function () {
-                    require addon_path($this->uuid, 'routes/web.php');
-                });
+                ->group(addon_path($this->uuid, 'routes/web.php'));
         }
 
         $this->registerSettingsItems();

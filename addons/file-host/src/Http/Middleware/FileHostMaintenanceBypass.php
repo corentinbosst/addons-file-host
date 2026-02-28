@@ -16,39 +16,53 @@ namespace App\Addons\FileHost\Http\Middleware;
 use App\Addons\FileHost\Models\FileHost;
 use Closure;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Storage;
 
+/**
+ * Middleware global prépendé AVANT PreventRequestsDuringMaintenance.
+ *
+ * withoutMiddleware() sur une route est INEFFICACE contre les middlewares globaux
+ * (ceux dans $middleware du Kernel) car ils tournent avant que le router ne
+ * soit consulté. Ce middleware résout le problème en interceptant les requêtes
+ * file-host directement dans la pipeline globale, avant le check de maintenance.
+ */
 class FileHostMaintenanceBypass
 {
-    private static ?string $cachedPrefix = null;
-
     public function handle(Request $request, Closure $next)
     {
-        if (self::$cachedPrefix === null) {
-            try {
-                self::$cachedPrefix = setting('file_host_prefix', 'drive') ?: 'drive';
-            } catch (\Throwable $e) {
-                self::$cachedPrefix = 'drive';
-            }
-        }
-
-        $path = ltrim($request->getPathInfo(), '/');
-        if (!str_starts_with($path, self::$cachedPrefix . '/')) {
+        // Si le site n'est PAS en maintenance, on laisse passer normalement.
+        if (!app()->isDownForMaintenance()) {
             return $next($request);
         }
 
-        $uuid = substr($path, strlen(self::$cachedPrefix) + 1);
-        
+        // Récupérer le préfixe configuré (avec fallback sécurisé).
         try {
-            $response = FileHost::serve($uuid);
-
-            if ($response !== null) {
-                return $response;
-            }
+            $prefix = setting('file_host_prefix', 'drive') ?: 'drive';
         } catch (\Throwable $e) {
-            \Illuminate\Support\Facades\Log::warning('FileHost bypass error: ' . $e->getMessage());
+            $prefix = 'drive';
         }
 
-        return $next($request);
+        $prefix = trim($prefix, '/');
+        $path   = ltrim($request->getPathInfo(), '/');
+
+        // La requête ne correspond pas au préfixe file-host → on laisse passer.
+        if (!str_starts_with($path, $prefix . '/')) {
+            return $next($request);
+        }
+
+        // Extraire le UUID depuis le chemin : /{prefix}/{uuid}
+        $uuid = substr($path, strlen($prefix) + 1);
+
+        if (empty($uuid)) {
+            return $next($request);
+        }
+
+        // Servir le fichier via la logique centralisée du modèle.
+        $response = FileHost::serve($uuid);
+
+        if ($response === null) {
+            return response(__('file-host::messages.access_denied'), 404);
+        }
+
+        return $response;
     }
 }

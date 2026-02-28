@@ -15,7 +15,6 @@ namespace App\Addons\FileHost\Http\Controllers;
 
 use App\Addons\FileHost\Models\FileHost;
 use App\Http\Controllers\Controller;
-use Illuminate\Support\Facades\Storage;
 
 class FileHostPublicController extends Controller
 {

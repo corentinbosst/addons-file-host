@@ -14,11 +14,18 @@
 use App\Addons\FileHost\Http\Controllers\FileHostPublicController;
 use Illuminate\Support\Facades\Route;
 
-$prefix = setting('file_host_prefix', 'drive');
+try {
+    $prefix = setting('file_host_prefix', 'drive') ?: 'drive';
+} catch (\Throwable $e) {
+    $prefix = 'drive';
+}
 
 Route::get('/' . $prefix . '/{uuid}', [FileHostPublicController::class, 'download'])
     ->name('download')
     ->where('uuid', '[a-zA-Z0-9\.\-_]+(?:\/[a-zA-Z0-9\.\-_]+)*')
     ->withoutMiddleware([
+        // Middleware de maintenance ClientXCMS (groupe web) — le vrai bloqueur
+        \App\Http\Middleware\MaintenanceMiddleware::class,
+        // Middleware de maintenance Laravel natif (globale), géré aussi par FileHostMaintenanceBypass
         \Illuminate\Foundation\Http\Middleware\PreventRequestsDuringMaintenance::class,
     ]);
